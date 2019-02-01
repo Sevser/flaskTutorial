@@ -1,23 +1,49 @@
-from flask import Flask
+import os.path
+
+from flask import Flask, Response
+
 
 app = Flask(__name__)
+app.config.from_object(__name__)
 
 
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
+def root_dir():  # pragma: no cover
+    return os.path.abspath(os.path.dirname(__file__))
 
 
-@app.route('/test')
-def test_func():
-    return 'thats test page'
+def get_file(filename):  # pragma: no cover
+    try:
+        src = os.path.join(root_dir(), filename)
+        # Figure out how flask returns static files
+        # Tried:
+        # - render_template
+        # - send_file
+        # This should not be so non-obvious
+        return open(src).read()
+    except IOError as exc:
+        return str(exc)
 
 
-@app.route('/user/<username>')
-def show_user_profile(username):
-    # show the user profile for that user
-    return 'User %s' % username
+@app.route('/', methods=['GET'])
+def metrics():  # pragma: no cover
+    content = get_file('static/index.html')
+    return Response(content, mimetype="text/html")
 
 
-if __name__ == '__main__':
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def get_resource(path):  # pragma: no cover
+    mimetypes = {
+        ".css": "text/css",
+        ".html": "text/html",
+        ".js": "application/javascript",
+    }
+    complete_path = os.path.join(root_dir(), path)
+    ext = os.path.splitext(path)[1]
+    mimetype = mimetypes.get(ext, "text/html")
+    content = get_file(complete_path)
+    return Response(content, mimetype=mimetype)
+
+
+if __name__ == '__main__':  # pragma: no cover
     app.run()
