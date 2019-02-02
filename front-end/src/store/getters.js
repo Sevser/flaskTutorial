@@ -1,2 +1,2 @@
 // eslint-disable-next-line
-export const count = state => state.count;
+export const token = state => state.token;

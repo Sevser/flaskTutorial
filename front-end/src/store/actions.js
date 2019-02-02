@@ -1,2 +1,2 @@
-export const increment = ({ commit }) => commit('increment');
-export const decrement = ({ commit }) => commit('decrement');
+// eslint-disable-next-line
+export const setToken = ({ commit }, token) => commit('SETTOKEN', token);

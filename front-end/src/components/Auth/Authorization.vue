@@ -33,7 +33,7 @@ export default {
   },
   methods: {
     handleSuccess(resp) {
-      console.log(resp);
+      this.$store.dispatch('setToken', resp.data.token);
     },
     hadnleError(resp) {
       throw new Error(resp.data);

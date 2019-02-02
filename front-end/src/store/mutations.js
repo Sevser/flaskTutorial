@@ -1,9 +1,5 @@
-export const increment = (state) => {
-  state.count += 1;
-  state.history.push('increment');
-};
-
-export const decrement = (state) => {
-  state.count -= 1;
-  state.history.push('decrement');
+// eslint-disable-next-line
+export const SETTOKEN = (state, token) => {
+  state.token = token;
+  state.history.push('SETTOKEN');
 };
