@@ -7,4 +7,5 @@ module.exports = {
     },
   },
   publicPath: 'static',
+  runtimeCompiler: true,
 };

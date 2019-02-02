@@ -1,8 +1,23 @@
 import Vue from 'vue';
-import App from './App.vue';
+import VueRouter from 'vue-router';
+import App from './App';
+import router from './router';
 
+Object.defineProperty(Vue.prototype, '$bus', {
+  get() {
+    return this.$root.bus;
+  },
+});
+
+Vue.use(VueRouter);
 Vue.config.productionTip = false;
-
+/* eslint-disable no-new */
 new Vue({
-  render: h => h(App),
-}).$mount('#app');
+  el: '#app',
+  router,
+  data: {
+    bus: new Vue({}),
+  },
+  components: { App },
+  template: '<App/>',
+});
