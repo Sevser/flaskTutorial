@@ -1,13 +1,39 @@
 import os.path
 import json
+import hashlib
 
-from flask import Flask, Response, request
+from flask import Flask, Response, request, url_for, session, abort, make_response
 from flask_cors import CORS
-
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
 
 app = Flask(__name__)
 app.config.from_object(__name__)
+app.config.update(
+    DEBUG=True,
+    SECRET_KEY='secret_xxx'
+)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
 CORS(app)
+
+
+class User(UserMixin):
+
+    def __init__(self, id, username, password):
+        self.id = id
+        self.name = username
+        self.password = password
+
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def __repr__(self):
+        return ''.join(' ' + str(x) for x in [self.id, self.name, self.password])
+
+
+users = []
 
 
 def root_dir():  # pragma: no cover
@@ -35,10 +61,33 @@ def metrics():  # pragma: no cover
 
 @app.route('/login', methods=['POST'])
 def auth():
-    print(request)
-    print(request.data)
-    print(json.loads(request.data))
-    return str(json.loads(request.data))
+    if request.method == 'POST':
+        if json.loads(request.data)['action'] == 'registration':
+            username = json.loads(request.data)['username']
+            password = json.loads(request.data)['password']
+            id = hashlib.md5((username + password).encode()).hexdigest()
+            user = User(id, username, password)
+            if user in users:
+                resp = make_response('user are exist')
+                return resp
+            else:
+                resp = { 'token': id }
+                users.append(user)
+                login_user(user)
+                return json.dumps(resp)
+        else:
+            resp = make_response('unknown action')
+            return resp
+    else:
+        return 'somethings gone wrong'
+
+
+# @app.route('/logout', methods=['post'])
+# def logout():
+#     if request.method == 'POST':
+#         token = json.loads(request.data)['token']
+#         position = users.index(User(id))
+#         print(position)
 
 
 @app.route('/', defaults={'path': ''})

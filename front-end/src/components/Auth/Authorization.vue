@@ -6,8 +6,12 @@
         Авторизация
       </div>
       <div>
+        <div>UserName</div>
         <input v-model="userName" placeholder="UserName">
+        <div>Password</div>
+        <input v-model="password" placeholder="UserName">
         <button v-on:click="submitUserName">Принять</button>
+        <div>{{respMessage}}</div>
       </div>
     </div>
   </div>
@@ -23,18 +27,25 @@ export default {
   data() {
     return {
       userName: '',
+      password: '',
+      respMessage: '',
     };
   },
   methods: {
-    handleSubmitSuccess(resp) {
+    handleSuccess(resp) {
       console.log(resp);
+    },
+    hadnleError(resp) {
+      throw new Error(resp.data);
     },
     submitUserName() {
       console.log(this.message);
       axios.post(`${config.getApiUrl()}login`, {
-        userName: this.userName,
-      }).then(this.handleSubmitSuccess)
-        .catch(this.handleSubmitSuccess);
+        action: 'registration',
+        username: this.userName,
+        password: this.password,
+      }).then(this.handleSuccess)
+        .catch(this.hadnleError);
     },
   },
 };

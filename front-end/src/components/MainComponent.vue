@@ -1,7 +1,6 @@
 <template>
   <div class="main-container">
     <auth></auth>
-    123123
   </div>
 </template>
 
