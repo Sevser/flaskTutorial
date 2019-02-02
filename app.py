@@ -1,10 +1,13 @@
 import os.path
+import json
 
-from flask import Flask, Response
+from flask import Flask, Response, request
+from flask_cors import CORS
 
 
 app = Flask(__name__)
 app.config.from_object(__name__)
+CORS(app)
 
 
 def root_dir():  # pragma: no cover
@@ -28,6 +31,14 @@ def get_file(filename):  # pragma: no cover
 def metrics():  # pragma: no cover
     content = get_file('static/index.html')
     return Response(content, mimetype="text/html")
+
+
+@app.route('/login', methods=['POST'])
+def auth():
+    print(request)
+    print(request.data)
+    print(json.loads(request.data))
+    return str(json.loads(request.data))
 
 
 @app.route('/', defaults={'path': ''})
