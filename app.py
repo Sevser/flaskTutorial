@@ -2,7 +2,7 @@ import os.path
 import json
 import hashlib
 
-from flask import Flask, Response, request, url_for, session, abort, make_response
+from flask import Flask, Response, request, url_for, session, abort, make_response, abort
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
 
@@ -71,13 +71,25 @@ def auth():
                 resp = make_response('user are exist')
                 return resp
             else:
-                resp = { 'token': id }
+                resp = {'token': id, 'username': username}
                 users.append(user)
                 login_user(user)
                 return json.dumps(resp)
+        elif json.loads(request.data)['action'] == 'login':
+            username = json.loads(request.data)['username']
+            password = json.loads(request.data)['password']
+            id = hashlib.md5((username + password).encode()).hexdigest()
+            user = User(id, username, password)
+            if user in users:
+                resp = {'token': id, 'username': username}
+                users.append(user)
+                login_user(user)
+                return json.dumps(resp)
+            else:
+                resp = make_response('user are not exist')
+                return resp
         else:
-            resp = make_response('unknown action')
-            return resp
+            return abort(404)
     else:
         return 'somethings gone wrong'
 

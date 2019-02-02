@@ -1,17 +1,24 @@
 <template>
   <div class="main-container">
-    <auth v-if="!isAuth"></auth>
+    <auth v-if="!isAuth" @setUserName="setUserName"></auth>
+    <userInfo v-if="isAuth" :userName="userName"></userInfo>
   </div>
 </template>
 <script>
 import { mapGetters } from 'vuex';
 import Authorization from './Auth/Authorization';
+import userInfo from './Auth/userInformation';
 
 export default {
   name: 'MainComponent',
+  components: {
+    'auth': Authorization,
+    userInfo,
+  },
   data() {
     return {
       isAuth: false,
+      userName: '',
     };
   },
   computed: {
@@ -29,8 +36,10 @@ export default {
       }
     },
   },
-  components: {
-    'auth': Authorization,
+  methods: {
+    setUserName(userName) {
+      this.userName = userName;
+    },
   },
 };
 </script>

@@ -27,4 +27,8 @@ body {
   height: 100%;
   margin: 0;
 }
+* {
+ -moz-box-sizing: border-box; /* в Firefox нужен префикс */
+    box-sizing: border-box;
+}
 </style>

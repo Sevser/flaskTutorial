@@ -6,12 +6,30 @@
         Авторизация
       </div>
       <div>
-        <div>UserName</div>
-        <input v-model="userName" placeholder="UserName">
-        <div>Password</div>
-        <input v-model="password" placeholder="UserName">
-        <button v-on:click="submitUserName">Принять</button>
-        <div>{{respMessage}}</div>
+        <div class="newUserContainer">
+          <div class="userFieldTitle">Создать пользователя</div>
+          <div class="newUserFieldContainer">
+            <div class="userFieldTitle">UserName</div>
+            <input type="text" v-model="userNameRegistration" placeholder="UserName">
+          </div>
+          <div class="newUserFieldContainer">
+            <div class="userFieldTitle">Password</div>
+            <input type="password" v-model="passwordRegistration" placeholder="Password">
+          </div>
+          <button class="registrationButton" v-on:click="registerNewUser">Принять</button>
+        </div>
+        <div class="newUserContainer">
+          <div class="userFieldTitle">Залогиниться</div>
+          <div class="newUserFieldContainer">
+            <div class="userFieldTitle">UserName</div>
+            <input type="text" v-model="userNameLogIN" placeholder="UserName">
+          </div>
+          <div class="newUserFieldContainer">
+            <div class="userFieldTitle">Password</div>
+            <input type="password" v-model="passwordLogIN" placeholder="Password">
+          </div>
+          <button class="registrationButton" v-on:click="submitUserName">Принять</button>
+        </div>
       </div>
     </div>
   </div>
@@ -26,32 +44,66 @@ export default {
   name: 'Authorization',
   data() {
     return {
-      userName: '',
-      password: '',
-      respMessage: '',
+      userNameRegistration: '',
+      passwordRegistration: '',
+      userNameLogIN: '',
+      passwordLogIN: '',
     };
   },
   methods: {
     handleSuccess(resp) {
       this.$store.dispatch('setToken', resp.data.token);
+      this.$emit('setUserName', resp.data.username);
     },
-    hadnleError(resp) {
+    handleError(resp) {
       throw new Error(resp.data);
     },
-    submitUserName() {
-      console.log(this.message);
+    registerNewUser() {
       axios.post(`${config.getApiUrl()}login`, {
         action: 'registration',
-        username: this.userName,
-        password: this.password,
-      }).then(this.handleSuccess)
-        .catch(this.hadnleError);
+        username: this.userNameRegistration,
+        password: this.passwordRegistration,
+      }).then(this.handleSuccess, this.handleError);
+    },
+    submitUserName() {
+      axios.post(`${config.getApiUrl()}login`, {
+        action: 'login',
+        username: this.userNameLogIN,
+        password: this.passwordLogIN,
+      }).then(this.handleSuccess, this.handleError);
     },
   },
 };
 </script>
 
 <style scoped>
+.registrationButton {
+  width: calc(100% - 40px);
+}
+
+.userFieldTitle {
+  text-align: center;
+}
+
+.newUserFieldContainer {
+  width: calc(100% - 40px);
+  position: relative;
+}
+
+.newUserFieldContainer > input {
+  width: 100%;
+}
+
+.newUserContainer {
+  float: left;
+  position: relative;
+  width: 50%;
+}
+
+.newUserContainer > * {
+  margin: 10px 20px;
+}
+
 .title-auth {
   display: -webkit-box;
   display: -ms-flexbox;
