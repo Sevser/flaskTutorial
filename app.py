@@ -32,20 +32,30 @@ class User(UserMixin):
     def __repr__(self):
         return ''.join(str(x) + ' 'for x in [self.id, self.name, self.password])
 
+class Tiktaktoe:
+
+    def __init__(self, typegame, turn, firstUser, secondUser='bot'):
+        self.firstUser = firstUser
+        self.secondUser = secondUser
+        self.desk = [0]*9
+        self.turn = ["second", "first"][turn]
+        self.id = hashlib.md5((firstUser + 'bot').encode()).hexdigest()
+        self.typegame = typegame
+
+
+    def get_desk(self):
+        json.dumps(self.desk)
+
+
+
+
+
 
 users = []
+games = []
 
 users.append(User(hashlib.md5(('lox1' + 'lox1').encode()).hexdigest(), 'lox1', 'lox1' ))
 users.append(User(hashlib.md5(('lox2' + 'lox2').encode()).hexdigest(), 'lox2', 'lox2' ))
-
-
-def show_user(x: User):
-    return json.dumps(x)
-
-
-def show_users():
-    pass
-
 
 
 def root_dir():  # pragma: no cover
@@ -75,6 +85,46 @@ def get_user():
 
         resp = {"users": names}
         return json.dumps(resp)
+
+
+@app.route('/tiktaktoe', methods=['POST'])
+def tiktaktoe():
+    if json.loads(request.data)['action'] == 'play':
+        typegame = json.loads(request.data)['typegame']
+        turn = json.loads(request.data)['selectturn']
+
+        if typegame == "PlayAlone":
+            currentGame = Tiktaktoe(typegame, turn, json.loads(request.data)['token'])
+            games.append(currentGame)
+            resp = {
+                "status": "success",
+                "description": "zaebis",
+                "idgame": currentGame.id
+            }
+        else:
+            resp = {
+                "status": "failed",
+                "description": "you can only play alone",
+                "idgame": ""
+            }
+    else:
+        resp = {
+            "status": "failed",
+            "description": "check your choise, fool",
+            "idgame": ""
+        }
+    return json.dumps(resp)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
