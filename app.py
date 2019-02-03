@@ -30,10 +30,22 @@ class User(UserMixin):
         return self.id == other.id
 
     def __repr__(self):
-        return ''.join(' ' + str(x) for x in [self.id, self.name, self.password])
+        return ''.join(str(x) + ' 'for x in [self.id, self.name, self.password])
 
 
 users = []
+
+users.append(User(hashlib.md5(('lox1' + 'lox1').encode()).hexdigest(), 'lox1', 'lox1' ))
+users.append(User(hashlib.md5(('lox2' + 'lox2').encode()).hexdigest(), 'lox2', 'lox2' ))
+
+
+def show_user(x: User):
+    return json.dumps(x)
+
+
+def show_users():
+    pass
+
 
 
 def root_dir():  # pragma: no cover
@@ -51,6 +63,19 @@ def get_file(filename):  # pragma: no cover
         return open(src).read()
     except IOError as exc:
         return str(exc)
+
+
+@app.route('/getuser', methods=['POST'])
+def get_user():
+    if json.loads(request.data)['action'] == 'getallusers':
+        names = []
+        for user in users:
+            names.append({"username": user.name})
+        #print(names)
+
+        resp = {"users": names}
+        return json.dumps(resp)
+
 
 
 @app.route('/', methods=['GET'])
