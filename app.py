@@ -4,7 +4,7 @@ import hashlib
 
 from flask import Flask, Response, request, url_for, session, abort, make_response, abort
 from flask_cors import CORS
-from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -32,19 +32,80 @@ class User(UserMixin):
     def __repr__(self):
         return ''.join(str(x) + ' 'for x in [self.id, self.name, self.password])
 
-class Tiktaktoe:
+class Tiktactoe:
+    """
+    field - номер от 0 до 8 - ячейка на доске
+    012
+    345
+    678
 
+
+    """
     def __init__(self, typegame, turn, firstUser, secondUser='bot'):
         self.firstUser = firstUser
         self.secondUser = secondUser
+        self.firstUser = turn
+        self.secondUser = (turn + 1) % 2
         self.desk = [0]*9
-        self.turn = ["second", "first"][turn]
-        self.id = hashlib.md5((firstUser + 'bot').encode()).hexdigest()
+        self.turn = turn
+        self.id = hashlib.md5((firstUser + secondUser).encode()).hexdigest()
         self.typegame = typegame
 
 
     def get_desk(self):
         json.dumps(self.desk)
+
+    def win(self):
+        figure = 1
+        if self.desk[0] == figure and self.desk[1] == figure and self.desk[2] == figure:
+            return True
+        elif self.desk[3] == figure and self.desk[4] == figure and self.desk[5] == figure:
+            return True
+        elif self.desk[6] == figure and self.desk[7] == figure and self.desk[8] == figure:
+            return True
+        elif self.desk[0] == figure and self.desk[3] == figure and self.desk[6] == figure:
+            return True
+        elif self.desk[1] == figure and self.desk[4] == figure and self.desk[7] == figure:
+            return True
+        elif self.desk[2] == figure and self.desk[5] == figure and self.desk[8] == figure:
+            return True
+        elif self.desk[0] == figure and self.desk[4] == figure and self.desk[8] == figure:
+            return True
+        elif self.desk[2] == figure and self.desk[4] == figure and self.desk[6] == figure:
+            return True
+        figure = 2
+        if self.desk[0] == figure and self.desk[1] == figure and self.desk[2] == figure:
+            return True
+        elif self.desk[3] == figure and self.desk[4] == figure and self.desk[5] == figure:
+            return True
+        elif self.desk[6] == figure and self.desk[7] == figure and self.desk[8] == figure:
+            return True
+        elif self.desk[0] == figure and self.desk[3] == figure and self.desk[6] == figure:
+            return True
+        elif self.desk[1] == figure and self.desk[4] == figure and self.desk[7] == figure:
+            return True
+        elif self.desk[2] == figure and self.desk[5] == figure and self.desk[8] == figure:
+            return True
+        elif self.desk[0] == figure and self.desk[4] == figure and self.desk[8] == figure:
+            return True
+        elif self.desk[2] == figure and self.desk[4] == figure and self.desk[6] == figure:
+            return True
+        return False
+
+    def finish_the_game(self):
+        pass
+
+
+    def make_turn(self, field):
+
+        if self.desk[field] == 0:
+            self.desk[field] = self.turn + 1
+            self.turn = (self.turn + 1) % 2
+            return True
+        return False
+
+
+
 
 
 
@@ -54,8 +115,8 @@ class Tiktaktoe:
 users = []
 games = []
 
-users.append(User(hashlib.md5(('lox1' + 'lox1').encode()).hexdigest(), 'lox1', 'lox1' ))
-users.append(User(hashlib.md5(('lox2' + 'lox2').encode()).hexdigest(), 'lox2', 'lox2' ))
+users.append(User(hashlib.md5(('lox1' + 'lox1').encode()).hexdigest(), 'lox1', 'lox1'))
+users.append(User(hashlib.md5(('lox2' + 'lox2').encode()).hexdigest(), 'lox2', 'lox2'))
 
 
 def root_dir():  # pragma: no cover
@@ -87,20 +148,21 @@ def get_user():
         return json.dumps(resp)
 
 
-@app.route('/tiktaktoe', methods=['POST'])
-def tiktaktoe():
+@app.route('/tiktactoe', methods=['POST'])
+def tiktactoe():
     if json.loads(request.data)['action'] == 'play':
         typegame = json.loads(request.data)['typegame']
         turn = json.loads(request.data)['selectturn']
-
         if typegame == "PlayAlone":
-            currentGame = Tiktaktoe(typegame, turn, json.loads(request.data)['token'])
+            """возможно, стоит поменять с учетом current_user"""
+            currentGame = Tiktactoe(typegame, turn, json.loads(request.data)['token'])
             games.append(currentGame)
             resp = {
                 "status": "success",
                 "description": "zaebis",
                 "idgame": currentGame.id
             }
+
         else:
             resp = {
                 "status": "failed",
@@ -115,15 +177,10 @@ def tiktaktoe():
         }
     return json.dumps(resp)
 
-
-
-
-
-
-
-
-
-
+@app.route('/tiktactoeplay', methods=['POST'])
+def tiktactoeplay():
+    if json.loads(request.data)['action'] == 'maketurn':
+        return json.dumps(json.loads(request.data)['token'])
 
 
 
