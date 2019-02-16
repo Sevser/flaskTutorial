@@ -3,7 +3,12 @@
     <v-stage :config="configKonva">
       <v-layer>
         <!--<v-circle :config="configCircle"></v-circle>-->
-        <v-rect @click="handleMouseClick" v-for="(config, i) in configRectField" :key="i+9" :config="config"></v-rect>
+        <v-rect @click="handleMouseClick" v-for="(config, i) in configRectField"
+                :key="i+9"
+                :config="config"
+                ref="rect"></v-rect>
+        <v-circle v-for="(config, i) in configsCircle" :key="i+18" :config="config"></v-circle>
+        <v-line v-for="(config, i) in configCross" :config="config" :key="i+27"></v-line>
       </v-layer>
     </v-stage>
   </div>
@@ -14,10 +19,13 @@ export default {
   name: 'game',
   data() {
     return {
+      isCross: false,
       configKonva: {
         width: 600,
         height: 600,
       },
+      configsCircle: [],
+      configCross: [],
       configRectField: [
         {
           x: 0,
@@ -131,12 +139,64 @@ export default {
           stroke: 'black',
         },
       ],
+      fieldGame: [],
     };
   },
   methods: {
+    createCircle(index) {
+      return {
+        index,
+        y: 100 + (Math.floor(index / 3) * 199),
+        x: 100 + ((index % 3) * 199),
+        radius: 70,
+        stroke: 'black',
+        strokeWidth: 4,
+      };
+    },
+    createCross(index) {
+      return {
+        points: [
+          50 + ((index % 3) * 199),
+          50 + (Math.floor(index / 3) * 199),
+          100 + ((index % 3) * 199),
+          100 + (Math.floor(index / 3) * 199),
+          150 + ((index % 3) * 199),
+          50 + (Math.floor(index / 3) * 199),
+          100 + ((index % 3) * 199),
+          100 + (Math.floor(index / 3) * 199),
+          150 + ((index % 3) * 199),
+          150 + (Math.floor(index / 3) * 199),
+          100 + ((index % 3) * 199),
+          100 + (Math.floor(index / 3) * 199),
+          50 + ((index % 3) * 199),
+          150 + (Math.floor(index / 3) * 199),
+          100 + ((index % 3) * 199),
+          100 + (Math.floor(index / 3) * 199),
+        ],
+        stroke: 'black',
+        strokeWidth: 4,
+        closed: 'true',
+      };
+    },
     handleMouseClick(event) {
       const index = event.target.attrs.data;
-      this.configRectField[index].fill = 'red';
+      if (this.fieldGame.length === 9) {
+        this.fieldGame = [];
+        this.configCross = [];
+        this.configsCircle = [];
+        return;
+      }
+      if (this.fieldGame.find(field => field === index)) {
+        return;
+      }
+      this.fieldGame.push(index);
+      if (this.isCross) {
+        this.configCross.push(this.createCross(index));
+      } else {
+        this.configsCircle.push(this.createCircle(index));
+      }
+      this.isCross = !this.isCross;
+      console.log(this.$refs.rect[index]);
     },
   },
 };
@@ -144,6 +204,8 @@ export default {
 
 <style scoped>
 .gameContainer {
+  position: absolute;
+  left: 200px;
   width: 600px;
   height: 600px;
   background: white;

@@ -1,11 +1,11 @@
 <template>
   <div class="main-container">
-    <div v-if="!isAuth">
-      <userInfo v-if="isAuth" :userName="userName"></userInfo>
+    <div v-if="isAuth">
+      <userInfo :userName="userName"></userInfo>
       <game></game>
       <userList></userList>
     </div>
-    <auth v-if="isAuth" @setUserName="setUserName"></auth>
+    <auth v-if="!isAuth" @setUserName="setUserName"></auth>
   </div>
 </template>
 <script>
