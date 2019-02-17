@@ -144,6 +144,7 @@ export default {
         },
       ],
       fieldGame: [],
+      idGame: null,
     };
   },
   computed: {
@@ -152,6 +153,10 @@ export default {
     ]),
   },
   methods: {
+    clearFields() {
+      this.configsCircle = [];
+      this.configCross = [];
+    },
     createCircle(index) {
       return {
         index,
@@ -160,6 +165,7 @@ export default {
         radius: 70,
         stroke: 'black',
         strokeWidth: 4,
+        selectTurn: '',
       };
     },
     createCross(index) {
@@ -187,28 +193,61 @@ export default {
         closed: 'true',
       };
     },
+    makeTurn(index) {
+      this.clearFields();
+      const props = {
+        space: index,
+        action: 'maketurn',
+      };
+      axios.post(`${config.getApiUrl()}tiktactoe`, props)
+        .then(this.handleMakeTurnSuccess, this.handleErrorMakeTurn);
+    },
+    handleErrorMakeTurn() {
+      // eslint-disable-next-line
+      console.log(error);
+    },
+    handleMakeTurnSuccess(resp) {
+      console.log(resp.data);
+
+      resp.data.spaces.forEach((space, index) => {
+        if (space) {
+          if (space === 1) {
+            this.configCross.push(this.createCross(index));
+          } else if (space === 2) {
+            this.configsCircle.push(this.createCircle(index));
+          }
+        }
+      });
+    },
     handleMouseClick(event) {
       const index = event.target.attrs.data;
-      if (this.fieldGame.length === 9) {
-        this.fieldGame = [];
-        this.configCross = [];
-        this.configsCircle = [];
-        return;
-      }
-      if (this.fieldGame.find(field => field === index)) {
-        return;
-      }
-      this.fieldGame.push(index);
-      if (this.isCross) {
-        this.configCross.push(this.createCross(index));
-      } else {
-        this.configsCircle.push(this.createCircle(index));
-      }
-      this.isCross = !this.isCross;
+      this.makeTurn(index);
+      // if (this.fieldGame.length === 9) {
+      //   this.fieldGame = [];
+      //   this.configCross = [];
+      //   this.configsCircle = [];
+      //   return;
+      // }
+      // if (this.fieldGame.find(field => field === index)) {
+      //   return;
+      // }
+      // this.fieldGame.push(index);
+      // if (this.isCross) {
+      //   this.configCross.push(this.createCross(index));
+      // } else {
+      //   this.configsCircle.push(this.createCircle(index));
+      // }
+      // this.isCross = !this.isCross;
     },
     handleSuccessCreateGame(resp) {
-      // eslint-disable-next-line
-      console.log(resp);
+      if (resp.data.status === 'success') {
+        this.idGame = resp.data.idGame;
+        this.$bus.$emit('game:created', { idGame: this.idGame });
+        this.clearFields();
+      } else {
+        // eslint-disable-next-line
+        alert('что то пошло не так не удалось создать игру');
+      }
     },
     handleErrorCreateGame(error) {
       // eslint-disable-next-line
@@ -219,6 +258,7 @@ export default {
       props.action = 'play';
       // eslint-disable-next-line
       props.token = this.token;
+      this.selectTurn = props.selectturn;
       axios.post(`${config.getApiUrl()}tiktactoe`, props)
         .then(this.handleSuccessCreateGame, this.handleErrorCreateGame);
     },

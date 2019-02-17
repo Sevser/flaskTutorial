@@ -3,6 +3,9 @@
     <div>
       {{userName}}
     </div>
+    <div>
+      {{idGame}}
+    </div>
   </div>
 </template>
 
@@ -11,6 +14,15 @@ export default {
   name: 'userInformation',
   props: {
     userName: String,
+    idGame: null,
+  },
+  methods: {
+    setGameInfo(data) {
+      this.idGame = data.idGame;
+    },
+  },
+  mounted() {
+    this.$bus.$on('game:created', this.setGameInfo);
   },
 };
 </script>
