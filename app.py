@@ -107,6 +107,17 @@ class Tiktactoe:
             return True
         return False
 
+    def bot(self):
+        for i in range(len(self.desk)):
+            if self.desk[i] == 0:
+                self.desk[i] = self.turn + 1
+                self.turn = (self.turn + 1) % 2
+                break
+
+
+
+
+
 
 
 
@@ -118,8 +129,8 @@ winner = []
 users = []
 games = []
 
-users.append(User(hashlib.md5(('lox1' + 'lox1').encode()).hexdigest(), 'lox1', 'lox1'))
-users.append(User(hashlib.md5(('lox2' + 'lox2').encode()).hexdigest(), 'lox2', 'lox2'))
+users.append(User(hashlib.md5(('lox1' + 'lox1').encode()).hexdigest(), 'lox1', 'lox1' ))
+users.append(User(hashlib.md5(('lox2' + 'lox2').encode()).hexdigest(), 'lox2', 'lox2' ))
 
 
 def root_dir():  # pragma: no cover
@@ -170,6 +181,7 @@ def tiktactoe():
                     "description": "zaebis",
                     "idgame": currentGame.id
                 }
+                return json.dumps(resp)
 
             else:
                 resp = {
@@ -177,27 +189,39 @@ def tiktactoe():
                     "description": "you can only play alone",
                     "idgame": ""
                 }
+                return json.dumps(resp)
+
+        elif json.loads(request.data)['action'] == 'maketurn':
+            for game in games:
+                if True: #здесь должна быть проверка пользователя методом Game.is_id_correct
+                    if game.make_turn():
+                        if game.is_desk_filled():
+                            resp = {"status": "finish", "description": "Ничья, лол ебать как так", "idgame": game.id, "spaces": game.desk}
+                            return json.dumps(resp)
+                        elif game.is_anybody_won():
+                            resp = {"status": "finish", "description": "Ты победил, умница, красавица, лох", "idgame": game.id, "spaces": game.desk}
+                            return json.dumps(resp)
+                        game.bot()
+                        resp = {"status": "successful", "description": "Ход сделан", "idgame": game.id, "spaces": game.desk}
+                        return json.dumps(resp)
+                    else:
+                        resp = {"status": "failed", "description": "Ход не сделан (поле занято)", "idgame": game.id, "spaces": game.desk}
+                        return json.dumps(resp)
+            resp = {"status": "failed", "idgame": None, "spaces": None}
+            return json.dumps(resp)
+
         else:
             resp = {
                 "status": "failed",
                 "description": "check your choise, fool",
                 "idgame": ""
             }
-        return json.dumps(resp)
-    elif request.method == 'PUT':
-        if json.loads(request.data)['action'] == 'maketurn':
-            for game in games:
-                if True: #здесь должна быть проверка пользователя методом Game.is_id_correct
-                    game.make_turn()
-                    if game.is_desk_filled():
-                        return json.dumps('Ничья, лол ебать как так' + str(game.desk))
-                    elif game.is_anybody_won():
-                        return json.dumps('Ты победил, умница, красавица, лох')
-                    return json.dumps(game.desk)
-            return json.dumps(1)
+            return json.dumps(resp)
+
     elif request.method == 'GET':
         user = g.user
-        return json.dumps(user)
+        print(user)
+        return json.dumps({"user": user})
 
 
 @app.route('/', methods=['GET'])
