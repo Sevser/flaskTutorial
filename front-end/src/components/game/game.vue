@@ -15,6 +15,10 @@
 </template>
 
 <script>
+import axios from 'axios';
+import { mapGetters } from 'vuex';
+import config from '../../config/config';
+
 export default {
   name: 'game',
   data() {
@@ -142,6 +146,11 @@ export default {
       fieldGame: [],
     };
   },
+  computed: {
+    ...mapGetters([
+      'token',
+    ]),
+  },
   methods: {
     createCircle(index) {
       return {
@@ -196,8 +205,26 @@ export default {
         this.configsCircle.push(this.createCircle(index));
       }
       this.isCross = !this.isCross;
-      console.log(this.$refs.rect[index]);
     },
+    handleSuccessCreateGame(resp) {
+      // eslint-disable-next-line
+      console.log(resp);
+    },
+    handleErrorCreateGame(error) {
+      // eslint-disable-next-line
+      console.log(error);
+    },
+    startGame(props) {
+      // eslint-disable-next-line
+      props.action = 'play';
+      // eslint-disable-next-line
+      props.token = this.token;
+      axios.post(`${config.getApiUrl()}tiktactoe`, props)
+        .then(this.handleSuccessCreateGame, this.handleErrorCreateGame);
+    },
+  },
+  mounted() {
+    this.$bus.$on('start-game', this.startGame);
   },
 };
 </script>

@@ -4,6 +4,7 @@
       <userInfo :userName="userName"></userInfo>
       <game></game>
       <userList></userList>
+      <gameProp></gameProp>
     </div>
     <auth v-if="!isAuth" @setUserName="setUserName"></auth>
   </div>
@@ -14,6 +15,7 @@ import Authorization from './Auth/Authorization';
 import userInfo from './Auth/userInformation';
 import game from './game/game';
 import userList from './userList';
+import gameProp from './game/setGameProperties';
 
 export default {
   name: 'MainComponent',
@@ -22,6 +24,7 @@ export default {
     userInfo,
     game,
     userList,
+    gameProp,
   },
   data() {
     return {
