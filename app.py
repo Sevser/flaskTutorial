@@ -2,9 +2,12 @@ import os.path
 import json
 import hashlib
 
-from flask import Flask, Response, request, url_for, session, abort, make_response, abort
+from flask import Flask, Response, request, redirect, url_for, session, abort, render_template, make_response, abort, g
 from flask_cors import CORS
-from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
+from flask_wtf import Form
+from wtforms import StringField, BooleanField
+from wtforms.validators import DataRequired
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -18,6 +21,9 @@ login_manager.login_view = "login"
 
 CORS(app)
 
+class LoginForm(Form):
+    openid = StringField('openid', validators=[DataRequired()])
+    remember_me = BooleanField('remember_me', default=False)
 
 class User(UserMixin):
 
@@ -32,20 +38,88 @@ class User(UserMixin):
     def __repr__(self):
         return ''.join(str(x) + ' 'for x in [self.id, self.name, self.password])
 
+class Tiktactoe:
+    """
+    field - номер от 0 до 8 - ячейка на доске
+    012
+    345
+    678
 
+
+    """
+    def __init__(self, typegame, turn, firstUser, secondUser='bot'):
+        self.firstUser = firstUser
+        self.secondUser = secondUser
+        self.firstUser = turn
+        self.secondUser = (turn + 1) % 2
+        self.desk = [0]*9
+        self.turn = turn
+        self.id = hashlib.md5((firstUser + secondUser).encode()).hexdigest()
+        self.typegame = typegame
+
+    def is_id_correct(self, id_of_user):
+        return id_of_user == self.firstUser.id or id_of_user == self.secondUser.id
+
+    def get_desk(self):
+        json.dumps(self.desk)
+
+    def get_space_to_fill(self):
+        return json.loads(request.data)['space']
+
+
+    def is_anybody_won(self):
+        if self.desk[0] == self.desk[1] == self.desk[2] != 0:
+            return True
+        elif self.desk[3] == self.desk[4] == self.desk[5] != 0:
+            return True
+        elif self.desk[6] == self.desk[7] == self.desk[8] != 0:
+            return True
+        elif self.desk[0] == self.desk[3] == self.desk[6] != 0:
+            return True
+        elif self.desk[1] == self.desk[4] == self.desk[7] != 0:
+            return True
+        elif self.desk[2] == self.desk[5] == self.desk[8] != 0:
+            return True
+        elif self.desk[0] == self.desk[4] == self.desk[8] != 0:
+            return True
+        elif self.desk[2] == self.desk[4] == self.desk[6] != 0:
+            return True
+        return False
+
+    def is_desk_filled(self):
+        if self.desk.count(0) == 0:
+            return True
+        return False
+
+    """здесь надо удалять интсанс и перенаправлять"""
+    def finish_the_game(self, lastTurn):
+        if self.is_desk_filled():
+            print('Ничья')
+        else:
+            print('Игрок {} победил'.format(lastTurn))
+
+
+    def make_turn(self):
+        space = self.get_space_to_fill()
+        if self.desk[space] == 0:
+            self.desk[space] = self.turn + 1
+            self.turn = (self.turn + 1) % 2
+            return True
+        return False
+
+
+
+
+
+
+
+
+winner = []
 users = []
+games = []
 
-users.append(User(hashlib.md5(('lox1' + 'lox1').encode()).hexdigest(), 'lox1', 'lox1' ))
-users.append(User(hashlib.md5(('lox2' + 'lox2').encode()).hexdigest(), 'lox2', 'lox2' ))
-
-
-def show_user(x: User):
-    return json.dumps(x)
-
-
-def show_users():
-    pass
-
+users.append(User(hashlib.md5(('lox1' + 'lox1').encode()).hexdigest(), 'lox1', 'lox1'))
+users.append(User(hashlib.md5(('lox2' + 'lox2').encode()).hexdigest(), 'lox2', 'lox2'))
 
 
 def root_dir():  # pragma: no cover
@@ -64,6 +138,9 @@ def get_file(filename):  # pragma: no cover
     except IOError as exc:
         return str(exc)
 
+@app.before_request
+def before_request():
+    g.user = current_user
 
 @app.route('/getuser', methods=['POST'])
 def get_user():
@@ -76,6 +153,51 @@ def get_user():
         resp = {"users": names}
         return json.dumps(resp)
 
+
+@app.route('/tiktactoe', methods=['POST', 'GET', 'PUT'])
+def tiktactoe():
+    if request.method == 'POST':
+        winner.append(g.user)
+        if json.loads(request.data)['action'] == 'play':
+            typegame = json.loads(request.data)['typegame']
+            turn = json.loads(request.data)['selectturn']
+            if typegame == "PlayAlone":
+                """возможно, стоит поменять с учетом current_user"""
+                currentGame = Tiktactoe(typegame, turn, json.loads(request.data)['token'])
+                games.append(currentGame)
+                resp = {
+                    "status": "success",
+                    "description": "zaebis",
+                    "idgame": currentGame.id
+                }
+
+            else:
+                resp = {
+                    "status": "failed",
+                    "description": "you can only play alone",
+                    "idgame": ""
+                }
+        else:
+            resp = {
+                "status": "failed",
+                "description": "check your choise, fool",
+                "idgame": ""
+            }
+        return json.dumps(resp)
+    elif request.method == 'PUT':
+        if json.loads(request.data)['action'] == 'maketurn':
+            for game in games:
+                if True: #здесь должна быть проверка пользователя методом Game.is_id_correct
+                    game.make_turn()
+                    if game.is_desk_filled():
+                        return json.dumps('Ничья, лол ебать как так' + str(game.desk))
+                    elif game.is_anybody_won():
+                        return json.dumps('Ты победил, умница, красавица, лох')
+                    return json.dumps(game.desk)
+            return json.dumps(1)
+    elif request.method == 'GET':
+        user = g.user
+        return json.dumps(user)
 
 
 @app.route('/', methods=['GET'])
