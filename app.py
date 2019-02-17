@@ -68,39 +68,21 @@ class Tiktactoe:
 
 
     def is_anybody_won(self):
-        figure = 1
-        if self.desk[0] == figure and self.desk[1] == figure and self.desk[2] == figure:
+        if self.desk[0] == self.desk[1] == self.desk[2] != 0:
             return True
-        elif self.desk[3] == figure and self.desk[4] == figure and self.desk[5] == figure:
+        elif self.desk[3] == self.desk[4] == self.desk[5] != 0:
             return True
-        elif self.desk[6] == figure and self.desk[7] == figure and self.desk[8] == figure:
+        elif self.desk[6] == self.desk[7] == self.desk[8] != 0:
             return True
-        elif self.desk[0] == figure and self.desk[3] == figure and self.desk[6] == figure:
+        elif self.desk[0] == self.desk[3] == self.desk[6] != 0:
             return True
-        elif self.desk[1] == figure and self.desk[4] == figure and self.desk[7] == figure:
+        elif self.desk[1] == self.desk[4] == self.desk[7] != 0:
             return True
-        elif self.desk[2] == figure and self.desk[5] == figure and self.desk[8] == figure:
+        elif self.desk[2] == self.desk[5] == self.desk[8] != 0:
             return True
-        elif self.desk[0] == figure and self.desk[4] == figure and self.desk[8] == figure:
+        elif self.desk[0] == self.desk[4] == self.desk[8] != 0:
             return True
-        elif self.desk[2] == figure and self.desk[4] == figure and self.desk[6] == figure:
-            return True
-        figure = 2
-        if self.desk[0] == figure and self.desk[1] == figure and self.desk[2] == figure:
-            return True
-        elif self.desk[3] == figure and self.desk[4] == figure and self.desk[5] == figure:
-            return True
-        elif self.desk[6] == figure and self.desk[7] == figure and self.desk[8] == figure:
-            return True
-        elif self.desk[0] == figure and self.desk[3] == figure and self.desk[6] == figure:
-            return True
-        elif self.desk[1] == figure and self.desk[4] == figure and self.desk[7] == figure:
-            return True
-        elif self.desk[2] == figure and self.desk[5] == figure and self.desk[8] == figure:
-            return True
-        elif self.desk[0] == figure and self.desk[4] == figure and self.desk[8] == figure:
-            return True
-        elif self.desk[2] == figure and self.desk[4] == figure and self.desk[6] == figure:
+        elif self.desk[2] == self.desk[4] == self.desk[6] != 0:
             return True
         return False
 
